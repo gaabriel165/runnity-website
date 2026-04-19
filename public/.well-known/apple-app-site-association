@@ -1,0 +1,19 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "3HQ7VMSGH5.com.runnity.app"
+        ],
+        "components": [
+          {
+            "/": "/event/*"
+          },
+          {
+            "/": "/club/*"
+          }
+        ]
+      }
+    ]
+  }
+}

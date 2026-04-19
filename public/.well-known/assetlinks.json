@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.runnity.app",
+      "sha256_cert_fingerprints": ["2A:55:31:9A:7E:6B:3C:8E:88:C5:ED:ED:5A:F3:4F:47:01:42:1F:8C:22:3C:C0:1D:DB:07:77:23:6E:AF:09:95"]
+    }
+  }
+]
