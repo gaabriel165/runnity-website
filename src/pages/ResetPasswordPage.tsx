@@ -12,9 +12,10 @@ export const ResetPasswordPage = (): JSX.Element => {
   const { t } = useTranslation()
   const [searchParams] = useSearchParams()
 
-  const [pageState, setPageState] = useState<PageState>(() =>
-    searchParams.get('code') ? 'exchanging' : 'invalidToken'
-  )
+  const [pageState, setPageState] = useState<PageState>(() => {
+    if (window.location.hash.includes('error=')) return 'invalidToken'
+    return searchParams.get('code') ? 'exchanging' : 'invalidToken'
+  })
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [fieldError, setFieldError] = useState<string | null>(null)
@@ -22,6 +23,8 @@ export const ResetPasswordPage = (): JSX.Element => {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
+    if (window.location.hash.includes('error=')) return
+
     const code = searchParams.get('code')
 
     if (!code) return
