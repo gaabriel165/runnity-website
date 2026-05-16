@@ -206,6 +206,22 @@ const pt = {
       },
     ],
   },
+  resetPassword: {
+    title: 'Redefinir senha',
+    subtitle: 'Digite sua nova senha abaixo.',
+    newPassword: 'Nova senha',
+    confirmPassword: 'Confirmar senha',
+    newPasswordPlaceholder: 'Digite sua nova senha',
+    confirmPasswordPlaceholder: 'Confirme sua nova senha',
+    submit: 'Salvar nova senha',
+    saving: 'Salvando...',
+    successTitle: 'Senha redefinida!',
+    successMessage: 'Sua senha foi atualizada com sucesso. Você já pode fechar esta página e acessar o app.',
+    errorInvalidToken: 'Link inválido ou expirado. Solicite um novo link de redefinição de senha no app.',
+    errorPasswordMismatch: 'As senhas não coincidem.',
+    errorPasswordTooShort: 'A senha deve ter no mínimo 6 caracteres.',
+    errorGeneric: 'Ocorreu um erro ao redefinir a senha. Tente novamente.',
+  },
 } as const
 
 export default pt

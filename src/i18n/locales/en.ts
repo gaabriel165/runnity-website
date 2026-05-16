@@ -205,6 +205,22 @@ const en = {
       },
     ],
   },
+  resetPassword: {
+    title: 'Reset password',
+    subtitle: 'Enter your new password below.',
+    newPassword: 'New password',
+    confirmPassword: 'Confirm password',
+    newPasswordPlaceholder: 'Enter your new password',
+    confirmPasswordPlaceholder: 'Confirm your new password',
+    submit: 'Save new password',
+    saving: 'Saving...',
+    successTitle: 'Password reset!',
+    successMessage: 'Your password has been updated successfully. You can close this page and open the app.',
+    errorInvalidToken: 'Invalid or expired link. Please request a new password reset link in the app.',
+    errorPasswordMismatch: 'Passwords do not match.',
+    errorPasswordTooShort: 'Password must be at least 6 characters.',
+    errorGeneric: 'An error occurred while resetting your password. Please try again.',
+  },
 } as const
 
 export default en
