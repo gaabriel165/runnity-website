@@ -17,7 +17,7 @@ export const Navbar = (): JSX.Element => {
 
         <div className="flex items-center gap-4">
           <LanguageSwitcher />
-          <Button href="#download" variant="primary" className="text-sm px-5 py-2">
+          <Button href="/#download" variant="primary" className="text-sm px-5 py-2">
             {t('navbar.download')}
           </Button>
         </div>
