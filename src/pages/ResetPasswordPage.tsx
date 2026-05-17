@@ -58,32 +58,27 @@ export const ResetPasswordPage = (): JSX.Element => {
       return
     }
 
-    // Implicit flow: wait for the PASSWORD_RECOVERY event.
-    // INITIAL_SESSION with a session covers the race condition where PASSWORD_RECOVERY
-    // fires as a microtask before this listener is registered.
-    const isRecovery = window.location.hash.includes('type=recovery')
-    let timeout: ReturnType<typeof setTimeout>
+    // Implicit flow: extract tokens from the URL hash and call setSession explicitly.
+    // This avoids relying on onAuthStateChange event timing (detectSessionInUrl runs
+    // as a microtask and may fire PASSWORD_RECOVERY before our listener is registered).
+    const hashParams = new URLSearchParams(window.location.hash.slice(1))
+    const access_token = hashParams.get('access_token')
+    const refresh_token = hashParams.get('refresh_token')
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        clearTimeout(timeout)
-        setPageState('form')
-      } else if (event === 'INITIAL_SESSION' && session && isRecovery) {
-        clearTimeout(timeout)
-        setPageState('form')
-      } else if (event === 'INITIAL_SESSION' && !session) {
-        clearTimeout(timeout)
-        setPageState('invalidToken')
-      }
-    })
-
-    // Fallback: if no auth event fires (e.g. token expired before page loaded)
-    timeout = setTimeout(() => setPageState('invalidToken'), 10_000)
-
-    return () => {
-      subscription.unsubscribe()
-      clearTimeout(timeout)
+    if (!access_token || !refresh_token) {
+      setPageState('invalidToken')
+      return
     }
+
+    supabase.auth
+      .setSession({ access_token, refresh_token })
+      .then(({ data, error }) => {
+        if (error || !data.session) {
+          setPageState('invalidToken')
+        } else {
+          setPageState('form')
+        }
+      })
   }, [])
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
