@@ -220,6 +220,9 @@ const en = {
     errorPasswordMismatch: 'Passwords do not match.',
     errorPasswordTooShort: 'Password must be at least 6 characters.',
     errorGeneric: 'An error occurred while resetting your password. Please try again.',
+    landingTitle: 'Ready to reset your password?',
+    landingMessage: 'Click the button below to start. This step ensures only you can use this link.',
+    startButton: 'Reset my password',
   },
 } as const
 
