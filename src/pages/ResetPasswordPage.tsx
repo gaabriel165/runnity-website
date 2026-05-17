@@ -25,9 +25,16 @@ export const ResetPasswordPage = (): JSX.Element => {
   useEffect(() => {
     if (pageState !== 'exchanging') return
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const isRecovery = window.location.hash.includes('type=recovery')
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
         setPageState('form')
+      } else if (event === 'INITIAL_SESSION' && session && isRecovery) {
+        // Supabase processed the hash before the listener was registered
+        setPageState('form')
+      } else if (event === 'INITIAL_SESSION' && !session) {
+        setPageState('invalidToken')
       }
     })
 
