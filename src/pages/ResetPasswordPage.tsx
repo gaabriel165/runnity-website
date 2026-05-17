@@ -65,6 +65,13 @@ export const ResetPasswordPage = (): JSX.Element => {
     setSubmitError(null)
     setIsSubmitting(true)
 
+    const { error: refreshError } = await supabase.auth.refreshSession()
+    if (refreshError) {
+      setIsSubmitting(false)
+      setSubmitError(t('resetPassword.errorGeneric'))
+      return
+    }
+
     const { error } = await supabase.auth.updateUser({ password })
 
     if (error) {
