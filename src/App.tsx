@@ -1,14 +1,26 @@
 import type { JSX } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import { HomePage } from './pages/HomePage'
 import { TermsPage } from './pages/TermsPage'
 import { PrivacyPage } from './pages/PrivacyPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import NotFoundPage from './pages/NotFoundPage'
 
+function HashErrorRedirect(): null {
+  const navigate = useNavigate()
+  useEffect(() => {
+    if (window.location.hash.includes('error=')) {
+      navigate('/auth/reset-password' + window.location.hash, { replace: true })
+    }
+  }, [])
+  return null
+}
+
 export default function App(): JSX.Element {
   return (
     <BrowserRouter>
+      <HashErrorRedirect />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/terms" element={<TermsPage />} />
