@@ -7,6 +7,19 @@ import { supabase } from '../lib/supabase'
 
 type PageState = 'exchanging' | 'form' | 'success' | 'invalidToken'
 
+const EyeIcon = (): JSX.Element => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+  </svg>
+)
+
+const EyeOffIcon = (): JSX.Element => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+  </svg>
+)
+
 export const ResetPasswordPage = (): JSX.Element => {
   const { t } = useTranslation()
 
@@ -18,9 +31,14 @@ export const ResetPasswordPage = (): JSX.Element => {
   })
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [fieldError, setFieldError] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const isPasswordValid = password.length >= 6
+  const passwordsMatch = password === confirmPassword
+  const isFormValid = isPasswordValid && passwordsMatch && confirmPassword.length > 0
 
   useEffect(() => {
     if (pageState !== 'exchanging') return
@@ -29,9 +47,10 @@ export const ResetPasswordPage = (): JSX.Element => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
+        history.replaceState(null, '', window.location.pathname)
         setPageState('form')
       } else if (event === 'INITIAL_SESSION' && session && isRecovery) {
-        // Supabase processed the hash before the listener was registered
+        history.replaceState(null, '', window.location.pathname)
         setPageState('form')
       } else if (event === 'INITIAL_SESSION' && !session) {
         setPageState('invalidToken')
@@ -43,30 +62,21 @@ export const ResetPasswordPage = (): JSX.Element => {
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
-    setFieldError(null)
+    if (!isFormValid) return
+
     setSubmitError(null)
-
-    if (password.length < 6) {
-      setFieldError(t('resetPassword.errorPasswordTooShort'))
-      return
-    }
-
-    if (password !== confirmPassword) {
-      setFieldError(t('resetPassword.errorPasswordMismatch'))
-      return
-    }
-
     setIsSubmitting(true)
 
     const { error } = await supabase.auth.updateUser({ password })
 
-    setIsSubmitting(false)
-
     if (error) {
+      setIsSubmitting(false)
       setSubmitError(t('resetPassword.errorGeneric'))
       return
     }
 
+    await supabase.auth.signOut()
+    setIsSubmitting(false)
     setPageState('success')
   }
 
@@ -110,37 +120,63 @@ export const ResetPasswordPage = (): JSX.Element => {
                   <label className="text-sm font-medium text-text-secondary">
                     {t('resetPassword.newPassword')}
                   </label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder={t('resetPassword.newPasswordPlaceholder')}
-                    required
-                    className="bg-surface-alt border border-border rounded-xl px-4 py-3 text-text-primary placeholder:text-text-secondary/50 outline-none focus:border-primary transition-colors"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder={t('resetPassword.newPasswordPlaceholder')}
+                      className="w-full bg-surface-alt border border-border rounded-xl px-4 py-3 pr-11 text-text-primary placeholder:text-text-secondary/50 outline-none focus:border-primary transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary transition-colors"
+                      aria-label={showPassword ? t('resetPassword.hidePassword') : t('resetPassword.showPassword')}
+                    >
+                      {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                    </button>
+                  </div>
+                  <p className={`text-xs transition-colors ${password.length === 0 ? 'text-text-secondary/50' : isPasswordValid ? 'text-success' : 'text-danger'}`}>
+                    {t('resetPassword.passwordHint')}
+                  </p>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-medium text-text-secondary">
                     {t('resetPassword.confirmPassword')}
                   </label>
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder={t('resetPassword.confirmPasswordPlaceholder')}
-                    required
-                    className="bg-surface-alt border border-border rounded-xl px-4 py-3 text-text-primary placeholder:text-text-secondary/50 outline-none focus:border-primary transition-colors"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder={t('resetPassword.confirmPasswordPlaceholder')}
+                      className="w-full bg-surface-alt border border-border rounded-xl px-4 py-3 pr-11 text-text-primary placeholder:text-text-secondary/50 outline-none focus:border-primary transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary transition-colors"
+                      aria-label={showConfirmPassword ? t('resetPassword.hidePassword') : t('resetPassword.showPassword')}
+                    >
+                      {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+                    </button>
+                  </div>
+                  {confirmPassword.length > 0 && (
+                    <p className={`text-xs ${passwordsMatch ? 'text-success' : 'text-danger'}`}>
+                      {passwordsMatch ? t('resetPassword.passwordsMatch') : t('resetPassword.errorPasswordMismatch')}
+                    </p>
+                  )}
                 </div>
 
-                {(fieldError ?? submitError) && (
-                  <p className="text-sm text-danger">{fieldError ?? submitError}</p>
+                {submitError && (
+                  <p className="text-sm text-danger">{submitError}</p>
                 )}
 
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={!isFormValid || isSubmitting}
                   className="mt-2 inline-flex items-center justify-center font-semibold rounded-xl px-6 py-3 transition-all duration-200 bg-primary text-white hover:bg-primary-dark active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
                 >
                   {isSubmitting ? t('resetPassword.saving') : t('resetPassword.submit')}

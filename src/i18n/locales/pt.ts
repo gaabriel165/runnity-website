@@ -221,6 +221,10 @@ const pt = {
     errorPasswordMismatch: 'As senhas não coincidem.',
     errorPasswordTooShort: 'A senha deve ter no mínimo 6 caracteres.',
     errorGeneric: 'Ocorreu um erro ao redefinir a senha. Tente novamente.',
+    passwordHint: 'Mínimo 6 caracteres',
+    passwordsMatch: 'As senhas coincidem',
+    showPassword: 'Mostrar senha',
+    hidePassword: 'Ocultar senha',
   },
 } as const
 

@@ -220,6 +220,10 @@ const en = {
     errorPasswordMismatch: 'Passwords do not match.',
     errorPasswordTooShort: 'Password must be at least 6 characters.',
     errorGeneric: 'An error occurred while resetting your password. Please try again.',
+    passwordHint: 'At least 6 characters',
+    passwordsMatch: 'Passwords match',
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
   },
 } as const
 
