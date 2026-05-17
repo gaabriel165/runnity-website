@@ -47,10 +47,8 @@ export const ResetPasswordPage = (): JSX.Element => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
-        history.replaceState(null, '', window.location.pathname)
         setPageState('form')
       } else if (event === 'INITIAL_SESSION' && session && isRecovery) {
-        history.replaceState(null, '', window.location.pathname)
         setPageState('form')
       } else if (event === 'INITIAL_SESSION' && !session) {
         setPageState('invalidToken')
@@ -76,6 +74,7 @@ export const ResetPasswordPage = (): JSX.Element => {
     }
 
     await supabase.auth.signOut()
+    history.replaceState(null, '', window.location.pathname)
     setIsSubmitting(false)
     setPageState('success')
   }
