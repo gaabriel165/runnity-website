@@ -25,7 +25,9 @@ export const ResetPasswordPage = (): JSX.Element => {
 
   const [pageState, setPageState] = useState<PageState>(() => {
     const hash = window.location.hash
+    const search = window.location.search
     if (hash.includes('error=')) return 'invalidToken'
+    if (new URLSearchParams(search).has('code')) return 'exchanging'
     if (hash.includes('access_token=')) return 'exchanging'
     return 'invalidToken'
   })
@@ -43,19 +45,33 @@ export const ResetPasswordPage = (): JSX.Element => {
   useEffect(() => {
     if (pageState !== 'exchanging') return
 
-    const isRecovery = window.location.hash.includes('type=recovery')
+    const code = new URLSearchParams(window.location.search).get('code')
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // PKCE flow: exchange the code for a session (creates a real DB session)
+    if (code) {
+      supabase.auth
+        .exchangeCodeForSession(code)
+        .then(({ error }) => {
+          history.replaceState(null, '', window.location.pathname)
+          setPageState(error ? 'invalidToken' : 'form')
+        })
+      return
+    }
+
+    // Implicit flow: wait for the PASSWORD_RECOVERY event
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setPageState('form')
-      } else if (event === 'INITIAL_SESSION' && session && isRecovery) {
-        setPageState('form')
-      } else if (event === 'INITIAL_SESSION' && !session) {
-        setPageState('invalidToken')
       }
     })
 
-    return () => subscription.unsubscribe()
+    // Fallback: if the event never fires (expired/invalid token), show error after 10s
+    const timeout = setTimeout(() => setPageState('invalidToken'), 10_000)
+
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(timeout)
+    }
   }, [])
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
@@ -64,13 +80,6 @@ export const ResetPasswordPage = (): JSX.Element => {
 
     setSubmitError(null)
     setIsSubmitting(true)
-
-    const { error: refreshError } = await supabase.auth.refreshSession()
-    if (refreshError) {
-      setIsSubmitting(false)
-      setSubmitError(t('resetPassword.errorGeneric'))
-      return
-    }
 
     const { error } = await supabase.auth.updateUser({ password })
 
