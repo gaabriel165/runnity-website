@@ -58,15 +58,27 @@ export const ResetPasswordPage = (): JSX.Element => {
       return
     }
 
-    // Implicit flow: wait for the PASSWORD_RECOVERY event
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    // Implicit flow: wait for the PASSWORD_RECOVERY event.
+    // INITIAL_SESSION with a session covers the race condition where PASSWORD_RECOVERY
+    // fires as a microtask before this listener is registered.
+    const isRecovery = window.location.hash.includes('type=recovery')
+    let timeout: ReturnType<typeof setTimeout>
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
+        clearTimeout(timeout)
         setPageState('form')
+      } else if (event === 'INITIAL_SESSION' && session && isRecovery) {
+        clearTimeout(timeout)
+        setPageState('form')
+      } else if (event === 'INITIAL_SESSION' && !session) {
+        clearTimeout(timeout)
+        setPageState('invalidToken')
       }
     })
 
-    // Fallback: if the event never fires (expired/invalid token), show error after 10s
-    const timeout = setTimeout(() => setPageState('invalidToken'), 10_000)
+    // Fallback: if no auth event fires (e.g. token expired before page loaded)
+    timeout = setTimeout(() => setPageState('invalidToken'), 10_000)
 
     return () => {
       subscription.unsubscribe()
