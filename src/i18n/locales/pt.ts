@@ -221,9 +221,6 @@ const pt = {
     errorPasswordMismatch: 'As senhas não coincidem.',
     errorPasswordTooShort: 'A senha deve ter no mínimo 6 caracteres.',
     errorGeneric: 'Ocorreu um erro ao redefinir a senha. Tente novamente.',
-    landingTitle: 'Pronto para redefinir sua senha?',
-    landingMessage: 'Clique no botão abaixo para continuar. Essa etapa garante que só você pode usar este link.',
-    startButton: 'Redefinir minha senha',
   },
 } as const
 
